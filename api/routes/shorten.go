@@ -40,7 +40,7 @@ func ShortenURL( c * fiber.Ctx)error{
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error":"InvalidUrl"})
 	}
 	
-
+body.URL=helpers.EnforceHTTP(body.URL)
 	return nil
 }
 
