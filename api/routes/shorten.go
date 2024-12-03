@@ -50,7 +50,7 @@ func ShortenURL( c * fiber.Ctx)error{
 			limit,_:=r2.TTL(database.Ctx,c.IP()).Result()
 			return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{
 				"error":"Rate Limit exceeded",
-				"rate_limit_resp ":limit,
+				"rate_limit_reset": limit / time.Nanosecond / time.Minute,
 			})
 		}
 	}
@@ -74,7 +74,24 @@ if body.CustomShort==""{
 }else {
 	id=body.CustomShort
 }
+r :=database.CreateClient(0)
+defer r.Close()
+val,_=r.Get(database.Ctx,id).Result()
+if val!=""{
+	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		"error":"Link already exists",
+	})
+}
+if body.Expiry==0{
+	body.Expiry=24
+}
+err=r.Set(database.Ctx,id,body.URL,body.Expiry*3600*time.Second).Err()
 
+if err!=nil{
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		"error":"unable to connect",
+	})
+}
 r2.Decr(database.Ctx,c.IP())
 
 	return nil
