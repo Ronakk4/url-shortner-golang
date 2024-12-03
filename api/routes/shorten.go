@@ -44,8 +44,4 @@ body.URL=helpers.EnforceHTTP(body.URL)
 	return nil
 }
 
-func ResolveURL( c * fiber.Ctx)error{
 
-
-	return nil
-}
